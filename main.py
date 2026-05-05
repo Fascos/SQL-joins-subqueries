@@ -21,8 +21,7 @@ df_boston = pd.read_sql(
     '''
     SELECT 
         employees.firstName, 
-        employees.lastName, 
-        employees.jobTitle
+        employees.lastName
     FROM employees
     JOIN offices 
         ON employees.officeCode = offices.officeCode
@@ -154,18 +153,17 @@ df_total_customers = pd.read_sql(
         ON p.productCode = od.productCode
     JOIN orders AS o
         ON od.orderNumber = o.orderNumber
-    GROUP BY p.productCode
+    GROUP BY p.productCode, p.productName
     ORDER BY numpurchasers DESC;
     ''', conn
 )
-
 
 
 df_customers = pd.read_sql (
     '''
     SELECT 
         o.officeCode,o.city,
-        COUNT(c.customerNumber) AS n_customers
+        COUNT(DISTINCT c.customerNumber) AS n_customers
     FROM offices as o
     JOIN employees as e
         ON o.officeCode = e.officeCode
