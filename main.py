@@ -204,4 +204,4 @@ df_under_20 = pd.read_sql(
         HAVING COUNT(DISTINCT o2.customerNumber) <= 19
     );
     ''', conn
-)y, conn)
+)
