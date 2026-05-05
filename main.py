@@ -19,14 +19,16 @@ schema = pd.read_sql("""SELECT * FROM sqlite_master;""", conn)
 # =========================
 df_boston = pd.read_sql(
     '''
-    SELECT firstName, lastName, jobTitle
+    SELECT 
+        employees.firstName, 
+        employees.lastName, 
+        employees.jobTitle
     FROM employees
     JOIN offices 
         ON employees.officeCode = offices.officeCode
-    WHERE city = 'Boston'
+    WHERE offices.city = 'Boston'
     ''', conn
 )
-
 
 # =========================
 # STEP 2
@@ -158,6 +160,24 @@ df_total_customers = pd.read_sql(
 )
 
 
+
+df_customers = pd.read_sql (
+    '''
+    SELECT 
+        o.officeCode,o.city,
+        COUNT(c.customerNumber) AS n_customers
+    FROM offices as o
+    JOIN employees as e
+        ON o.officeCode = e.officeCode
+    Join customers as c
+        ON e.employeeNumber = c.salesRepEmployeeNumber
+    GROUP BY o.officeCode,o.city
+    ORDER BY n_customers DESC;
+    ''', conn
+)
+
+
+
 # =========================
 # STEP 9 (subquery)
 # Low customer products
@@ -186,22 +206,22 @@ df_under_20 = pd.read_sql(
         e.lastName,
         o.city,
         o.officeCode
-    FROM offices AS o
-    JOIN employees AS e
+    FROM offices o
+    JOIN employees e
         ON o.officeCode = e.officeCode
-    JOIN customers AS c
+    JOIN customers c
         ON e.employeeNumber = c.salesRepEmployeeNumber
-    JOIN orders AS a 
-        ON c.customerNumber = a.customerNumber
-    JOIN orderdetails AS od
-        ON a.orderNumber = od.orderNumber
+    JOIN orders ord
+        ON c.customerNumber = ord.customerNumber
+    JOIN orderdetails od
+        ON ord.orderNumber = od.orderNumber
     WHERE od.productCode IN (
         SELECT od2.productCode
         FROM orderdetails od2
-        JOIN orders o2
-            ON od2.orderNumber = o2.orderNumber
+        JOIN orders ord2
+            ON od2.orderNumber = ord2.orderNumber
         GROUP BY od2.productCode
-        HAVING COUNT(DISTINCT o2.customerNumber) <= 19
+        HAVING COUNT(DISTINCT ord2.customerNumber) <= 19
     );
     ''', conn
 )
